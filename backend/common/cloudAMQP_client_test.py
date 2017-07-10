@@ -9,7 +9,7 @@ def test_basic():
     sentMsg = {'test_key': 'test_value'}
     client.sendMessage(sentMsg)
     client.sleep(5)
-    receivedMsg = client.receivedMsg()
+    receivedMsg = client.getMessage()
     assert sentMsg == receivedMsg
     print 'test_basic passed'
 

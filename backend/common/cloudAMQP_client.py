@@ -1,11 +1,15 @@
 import json
 import pika
+import configuration_service_client as conf_client
 
 class CloudAMQPClient:
-    def __init__(self, cloud_amqp_url, queue_name):
-        self.cloud_amqp_url = cloud_amqp_url
+    system_name = 'amqp'
+
+    def __init__(self, queue_name, cloud_amqp_url=''):
+        self.settings = conf_client.getSystemSettings(self.system_name)
+        self.cloud_amqp_url = self.settings['url']
         self.queue_name = queue_name
-        self.params = pika.URLParameters(cloud_amqp_url)
+        self.params = pika.URLParameters(self.cloud_amqp_url)
         self.params.socket_timeout = 3
         # connects to CloudAMQP
         self.connection = pika.BlockingConnection(self.params)

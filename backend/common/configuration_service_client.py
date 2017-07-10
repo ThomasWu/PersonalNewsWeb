@@ -1,25 +1,17 @@
 import json
 import pyjsonrpc
 
-class ConfigurationServiceClient(object):
-    def __init__(self, url):
-        self.url = url
-        self.client = pyjsonrpc.HttpClient(url=self.url)
+URL = 'http://localhost:4041'
 
-    def setAMQPSettings(self, settings):
-        pass
+client = pyjsonrpc.HttpClient(url=URL)
 
-    def getAMQPSettings(self):
-        pass
+def getSystemSettings(systemName):
+    if type(systemName) is not str:
+        return None
+    return client.call('getSystemSettings', systemName)
 
-    def setMongoDbSettings(self, settings):
-        pass
+def setSystemSettings(systemName, settings):
+    client.notify('setSystemSettings', systemName, settings)
 
-    def getMongoDbSettings(self):
-        pass
-
-    def getNewsRecommendationSettings(self):
-        pass
-
-    def getNewsTopicModelingSettings(self):
-        pass
+def dropSystemSettings(systemName):
+    client.notify('dropSystemSettings', systemName)

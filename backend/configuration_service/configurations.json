@@ -1,0 +1,30 @@
+{
+    "services": {
+        "recommendation_service": {},
+        "configuration_service": {}
+    },
+    "mongodb": {
+        "username": "admin",
+        "tables": {
+            "news_table": "news",
+            "click_logs_table": "click_logs"
+        },
+        "db": "news",
+        "host": "mongodb://ds025782.mlab.com",
+        "password": "123456",
+        "port": "25782"
+    },
+    "redis": {
+        "host": "localhost",
+        "port": 6379
+    },
+    "amqp": {
+        "url": "amqp://qyvxxytd:q2jeUmNZFfO5ExqupNzrdc3u93fxS6J4@fish.rmq.cloudamqp.com/qyvxxytd",
+        "queues": {
+            "log_clicks_task": "click_logs",
+            "graphite_monitor_task": "graphite",
+            "scrape_news_task": "raw_news",
+            "dedupe_news_task": "complete_news"
+        }
+    }
+}

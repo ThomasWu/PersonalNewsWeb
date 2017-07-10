@@ -1,7 +1,8 @@
 import operator
 import os
-import pyjsonrpc
 import sys
+import pyjsonrpc
+
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 
