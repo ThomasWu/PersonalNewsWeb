@@ -12,13 +12,11 @@ from cloudAMQP_client import CloudAMQPClient
 
 SLEEP_TIME_IN_SECONDS = 5
 
-DEDUPE_NEWS_TASK_QUEUE_URL = 'amqp://qyvxxytd:q2jeUmNZFfO5ExqupNzrdc3u93fxS6J4@fish.rmq.cloudamqp.com/qyvxxytd'
-DEDUPE_NEWS_TASK_QUEUE_NAME = 'complete_news'
-SCRAPE_NEWS_TASK_QUEUE_URL = 'amqp://qyvxxytd:q2jeUmNZFfO5ExqupNzrdc3u93fxS6J4@fish.rmq.cloudamqp.com/qyvxxytd'
-SCRAPE_NEWS_TASK_QUEUE_NAME = 'raw_news'
+DEDUPE_NEWS_AMQP_TASK = 'dedupe_news_task'
+SCRAPE_NEWS_AMQP_TASK = 'scrape_news_task'
 
-dedupe_news_queue_client = CloudAMQPClient(DEDUPE_NEWS_TASK_QUEUE_URL, DEDUPE_NEWS_TASK_QUEUE_NAME)
-scrape_news_queue_client = CloudAMQPClient(SCRAPE_NEWS_TASK_QUEUE_URL, SCRAPE_NEWS_TASK_QUEUE_NAME)
+dedupe_news_queue_client = CloudAMQPClient(task=DEDUPE_NEWS_AMQP_TASK)
+scrape_news_queue_client = CloudAMQPClient(task=SCRAPE_NEWS_AMQP_TASK)
 
 def handle_message(msg):
 	if msg is None or not isinstance(msg, dict):

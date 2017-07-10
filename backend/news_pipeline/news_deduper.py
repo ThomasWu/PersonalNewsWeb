@@ -10,8 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 import mongodb_client
 from cloudAMQP_client import CloudAMQPClient
 
-DEDUPE_NEWS_TASK_QUEUE_URL = 'amqp://qyvxxytd:q2jeUmNZFfO5ExqupNzrdc3u93fxS6J4@fish.rmq.cloudamqp.com/qyvxxytd'
-DEDUPE_NEWS_TASK_QUEUE_NAME = 'complete_news'
+DEDUPE_NEWS__AMQP_TASK = 'dedupe_news_task'
 
 SLEEP_TIME_IN_SECONDS = 1
 
@@ -19,7 +18,7 @@ SAME_NEWS_SIMILARITY_THRESHOLD = 0.9
 
 NEWS_TABLE_NAME = 'news'
 
-cloudAMQP_client = CloudAMQPClient(DEDUPE_NEWS_TASK_QUEUE_URL, DEDUPE_NEWS_TASK_QUEUE_NAME)
+cloudAMQP_client = CloudAMQPClient(task=DEDUPE_NEWS__AMQP_TASK)
 
 def handle_msg(msg):
     if msg is None or not isinstance(msg, dict):
@@ -35,6 +34,7 @@ def handle_msg(msg):
     published_at_day_end = published_at_day_begin + datetime.timedelta(days=1)
 
     db = mongodb_client.get_db()
+
     same_day_news_list = list(db[NEWS_TABLE_NAME].find(
         {'publishedAt': 
             {

@@ -3,12 +3,18 @@ import pika
 import configuration_service_client as conf_client
 
 class CloudAMQPClient:
-    system_name = 'amqp'
+    SYSTEM_NAME = 'amqp'
 
-    def __init__(self, queue_name, cloud_amqp_url=''):
-        self.settings = conf_client.getSystemSettings(self.system_name)
+    def __init__(self, task='', queue_name=''):
+        # retrieves settings from configuration service
+        self.settings = conf_client.getSystemSettings(self.SYSTEM_NAME)
         self.cloud_amqp_url = self.settings['url']
-        self.queue_name = queue_name
+        self.queue_name = self.settings['queues'][task] if task and task in self.settings['queues'] else queue_name
+        
+        print self.queue_name
+        # cloud amqp url and queue name must not be empty
+        assert self.cloud_amqp_url and self.queue_name
+
         self.params = pika.URLParameters(self.cloud_amqp_url)
         self.params.socket_timeout = 3
         # connects to CloudAMQP

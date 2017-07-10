@@ -18,7 +18,7 @@ require('./models/main.js').connect(config.mongoDbUri);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use('/static', express.static(path.join(__dirname, '../tw-web-client/build/static')));
+app.use('/static', express.static(path.join(__dirname, '../web-client/build/static')));
 app.use(bodyParser.json());
 
 // loads passport strateges

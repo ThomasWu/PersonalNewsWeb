@@ -1,8 +1,13 @@
 from pymongo import MongoClient
+import configuration_service_client as conf_client
 
-def get_db(host, port, db, username=None, password=None):
-    client = MongoClient('%s:%s' % (host, port))
-    db = client[db]
-    if username is not None and password is not None:
-        db.authenticate(username, password)
+SYSTEM_NAME = 'mongodb'
+
+def get_db():
+    # retrieves mongodb settings
+    settings = conf_client.getSystemSettings(SYSTEM_NAME)
+    client = MongoClient('%s:%s' % (settings['host'], settings['port']))
+    db = client[settings['db']]
+    # if 'username' in settings and 'password' in settings:
+    db.authenticate(settings['username'], settings['password'])
     return db

@@ -15,13 +15,12 @@ ALPHA = 0.1
 
 SLEEP_TIME_IN_SECONDS = 1
 
-LOG_CLICKS_TASK_QUEUE_URL = 'amqp://qyvxxytd:q2jeUmNZFfO5ExqupNzrdc3u93fxS6J4@fish.rmq.cloudamqp.com/qyvxxytd'
-LOG_CLICKS_TASK_QUEUE_NAME = 'click_logs'
+LOG_CLICKS_AMQP_TASK = 'log_clicks_task'
 
 PREFERENCE_MODEL_TABLE_NAME = 'user_preference_model'
 NEWS_TABLE_NAME = 'news'
 
-cloudAMQP_client = CloudAMQPClient(LOG_CLICKS_TASK_QUEUE_URL, LOG_CLICKS_TASK_QUEUE_NAME)
+cloudAMQP_client = CloudAMQPClient(task=LOG_CLICKS_AMQP_TASK)
 
 def handle_message(msg):
     if msg is None or not isinstance(msg, dict):
@@ -33,7 +32,7 @@ def handle_message(msg):
     userId = msg['userId']
     newsId = msg['newsId']
 
-    db = mongodb_client.get_remote_db()
+    db = mongodb_client.get_db()
     model = db[PREFERENCE_MODEL_TABLE_NAME]
 
     if model is None:

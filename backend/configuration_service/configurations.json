@@ -7,7 +7,7 @@
         "username": "admin",
         "tables": {
             "news_table": "news",
-            "click_logs_table": "click_logs"
+            "click_logs_table": "user_preference_model"
         },
         "db": "news",
         "host": "mongodb://ds025782.mlab.com",
