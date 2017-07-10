@@ -12,7 +12,10 @@ var app = express();
 
 var config = require('./config/config.json');
 // initialize and connect to mongo DB
-require('./models/main.js').connect(config.mongoDbUri);
+require('./models/main.js').connect(
+  config.mongoDbUri, {
+  useMongoClient: true,
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
