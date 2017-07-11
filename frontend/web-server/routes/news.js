@@ -30,7 +30,7 @@ router.get('/', function(req, res, next) {
 router.get('/userId/:userId/pageNum/:pageNum', function(req, res, next) {
     user_id = req.params['userId'];
     page_num = req.params['pageNum'];
-    console.log('Fetching news for ${user_id} on page ${page_num}');
+    console.log(`Fetching news for ${user_id} on page ${page_num}`);
 
     rpc_client.getNewsSummariesForUser(user_id, page_num, function(response) {
         res.json(response);
@@ -38,10 +38,10 @@ router.get('/userId/:userId/pageNum/:pageNum', function(req, res, next) {
 })
 
 // Log a user's click event
-router.post('/userId/:userId/newsId/:newsId', function(req, res, next) {
+router.post('/userId/:userId/click/:newsId', function(req, res, next) {
     user_id = req.params['userId'];
     news_id = req.params['newsId'];
-    console.log('Logging click event on ${news_id} for ${user_id}');
+    console.log(`Logging click event on ${news_id} for ${user_id}`);
 
     rpc_client.logNewsClickForUser(user_id, news_id);
     res.status(200);

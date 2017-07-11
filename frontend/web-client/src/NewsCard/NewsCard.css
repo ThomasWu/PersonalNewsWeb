@@ -17,6 +17,10 @@
   font-size: 18px;
 }
 
+.news-title {
+  cursor: pointer;
+}
+
 .news-chip {
   font-size: 18px;
 }

@@ -28,12 +28,11 @@ NEWS_LIMIT = 100
 NEWS_LIST_BATCH_SIZE = 10
 USER_NEWS_TIME_OUT_IN_SECOND = 60
 
-LOG_CLICKS_TASK_QUEUE_URL = 'amqp://qyvxxytd:q2jeUmNZFfO5ExqupNzrdc3u93fxS6J4@fish.rmq.cloudamqp.com/qyvxxytd'
-LOG_CLICKS_TASK_QUEUE_NAME = 'click_logs'
+LOG_CLICKS_AMQP_TASK = 'log_clicks_task'
 
 # initiate service clients
 redis_client = redis.StrictRedis(REDIS_HOST, REDIS_PORT, db=0)
-cloudAMQP_client = CloudAMQPClient(LOG_CLICKS_TASK_QUEUE_URL, LOG_CLICKS_TASK_QUEUE_NAME)
+cloudAMQP_client = CloudAMQPClient(task=LOG_CLICKS_AMQP_TASK)
 
 def getNewsSummariesForUser(user_id, page_num):
     page_num = int(page_num)
@@ -42,12 +41,12 @@ def getNewsSummariesForUser(user_id, page_num):
 
     sliced_news = []
 
-    db = mongodb_client.get_remote_db()
+    db = mongodb_client.get_db()
 
     if redis_client.get(user_id) is not None:
         news_digests = pickle.loads(redis_client.get(user_id))
         sliced_news_digests = news_digests[begin_index: end_index]
-        sliced_news = list(db[NEWS_TABLE_NAME].find({'digest': {'$in', sliced_news_digests}}))
+        sliced_news = list(db[NEWS_TABLE_NAME].find({'digest': {'$in': sliced_news_digests}}))
     else:
         total_news = list(db[NEWS_TABLE_NAME].find().sort([('publishedAt', -1)]).limit(NEWS_LIMIT))
         total_news_digests = [news['digest'] for news in total_news]
@@ -58,7 +57,8 @@ def getNewsSummariesForUser(user_id, page_num):
         sliced_news = total_news[begin_index: end_index]
 
     # TODO: Add preference
-    preference = news_recommendation_service_client.getPreferenceForUser(user_id)
+    # preference = news_recommendation_service_client.getPreferenceForUser(user_id)
+    preference = None
     topPreference = None
 
     if preference is not None and len(preference) > 0:
@@ -66,16 +66,16 @@ def getNewsSummariesForUser(user_id, page_num):
 
     for news in sliced_news:
         del news['text']
-        if news['class'] == topPreference:
-            news['reason'] = 'Recommend'
+        # if news['class'] == topPreference:
+        #     news['reason'] = 'Recommend'
         if news['publishedAt'].date() == datetime.today().date():
-            news['time'] = today
+            news['time'] = 'today'
     return json.loads(dumps(sliced_news))
 
 def logNewsClickForUser(user_id, news_id):
     message = {'userId': user_id, 'newsId': news_id, 'timestamp': datetime.utcnow()}
 
-    db = mongodb_client.get_remote_db()
+    db = mongodb_client.get_db()
     db[CLICK_LOGS_TABLE_NAME].insert(message)
 
     message['timestamp'] = str(message['timestamp'])

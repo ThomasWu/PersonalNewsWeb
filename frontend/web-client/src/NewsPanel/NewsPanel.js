@@ -60,19 +60,33 @@ class NewsPanel extends React.Component {
             });
     }
 
+    hideNews(news) {
+        let news_list = this.state.news;
+        console.log('Delete news', news_list.indexOf(news));
+        news_list.splice(news_list.indexOf(news), 1);
+        this.setState({
+            news: news_list
+        })
+    }
+
     renderNews() {
         console.log(this.state);
-        const news_list = this.state.news.map(function(news) {
+        const news_list = this.state.news.map( (news) => {
             return (
-                <a className="list-group-item" href="#">
-                    <NewsCard news={news}/>
+                <a className="collection-item" key={news.digest}>
+                    <NewsCard news={news} 
+                        hideNews={
+                            (news) => {
+                                this.hideNews(news);
+                            }
+                        } />
                 </a>
             );
         });
 
         return (
         <div className="container-fluid">
-            <div className='list-group'>
+            <div className='collection'>
             {news_list}
             </div>
         </div>

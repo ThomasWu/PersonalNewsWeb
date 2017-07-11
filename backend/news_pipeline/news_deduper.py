@@ -72,7 +72,6 @@ while True:
                 handle_msg(msg)
             except Exception as e:
                 print e
-                pass
 
         cloudAMQP_client.sleep(SLEEP_TIME_IN_SECONDS)
 
