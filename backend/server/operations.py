@@ -26,7 +26,7 @@ CLICK_LOGS_TABLE_NAME = 'click_logs'
 
 NEWS_LIMIT = 100
 NEWS_LIST_BATCH_SIZE = 10
-USER_NEWS_TIME_OUT_IN_SECOND = 60
+USER_NEWS_TIME_OUT_IN_SECOND = 60*60*24
 
 LOG_CLICKS_AMQP_TASK = 'log_clicks_task'
 
@@ -80,3 +80,38 @@ def logNewsClickForUser(user_id, news_id):
 
     message['timestamp'] = str(message['timestamp'])
     cloudAMQP_client.sendMessage(message)
+
+def logNewsPreferenceForUser(user_id, news_id, prefer_status):
+    user_liked_news_buff = redis_client.get(user_id+'liked')
+    user_liked_news = pickle.loads(user_liked_news_buff) if user_liked_news_buff is not None else set()
+    user_disliked_news_buff = redis_client.get(user_id+'disliked')
+    user_disliked_news = pickle.loads(user_disliked_news_buff) if user_disliked_news_buff is not None else set()
+    user_hided_news_buff = redis_client.get(user_id+'hided')
+    user_hided_news = pickle.loads(user_hided_news_buff) if user_hided_news_buff is not None else set()
+    
+    # handles hide action
+    if prefer_status == '-2':
+        if news_id in user_liked_news:
+            user_liked_news.remove(news_id)
+        user_hided_news.add(news_id)
+    # handles dislike action
+    elif prefer_status == '-1':
+        if news_id in user_liked_news:
+            user_liked_news.remove(news_id)
+        user_disliked_news.add(news_id)
+    # handles no preference
+    elif prefer_status == '0':
+        if news_id in user_liked_news:
+            user_liked_news.remove(news_id)
+        if news_id in user_disliked_news:
+            user_disliked_news.remove(news_id)
+    # handles like action
+    elif prefer_status == '1':
+        if news_id in user_disliked_news:
+            user_disliked_news.remove(news_id)
+        user_liked_news.add(news_id)
+
+    # stores into redis
+    redis_client.get(user_id+'liked', pickle.dumps(user_liked_news))
+    redis_client.get(user_id+'disliked', pickle.dumps(user_disliked_news))
+    redis_client.get(user_id+'hided', pickle.dumps(user_hided_news))

@@ -1,3 +1,6 @@
+/*global confirm*/
+/*eslint no-restricted-globals: ["error", "confirm"]*/
+
 import React from 'react';
 import no_image from './no-image-available.png';
 import './NewsCard.css';
@@ -8,7 +11,8 @@ class NewsCard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            like_status: 0
+            like_status: 0,
+            to_be_deleted: false
         };
     }
 
@@ -91,7 +95,10 @@ class NewsCard extends React.Component {
                                         </button>
                                         <button className="btn-floating btn-flat"
                                             onClick={(e) => {
-                                                this.props.hideNews(this.props.news);
+                                                let to_be_deleted = this.state.to_be_deleted;
+                                                this.setState({
+                                                    to_be_deleted: !to_be_deleted
+                                                });
                                             }}>
                                             <i className="material-icons grey-text">
                                                 delete
@@ -99,6 +106,30 @@ class NewsCard extends React.Component {
                                         </button>
                                     </div>
                                 </div>
+                                {
+                                    this.state.to_be_deleted && 
+                                    <div className="row">
+                                        <strong className="grey-text">Do you want to delete this news?</strong>
+                                        <button className="btn-floating btn-flat"
+                                            onClick={(e) => {
+                                                    this.setState({
+                                                    to_be_deleted: false
+                                                });
+                                            }}>
+                                            <i className="material-icons red-text">
+                                                clear
+                                            </i>
+                                        </button>
+                                        <button className="btn-floating btn-flat"
+                                            onClick={(e) => {
+                                                this.props.hideNews(this.props.news);
+                                            }}>
+                                            <i className="material-icons green-text">
+                                                done
+                                            </i>
+                                        </button>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
