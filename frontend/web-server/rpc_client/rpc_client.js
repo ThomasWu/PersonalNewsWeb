@@ -33,8 +33,17 @@ function logNewsClickForUser(user_id, news_id) {
         });
 }
 
+// Log a user's like/dislike/hide action on a news
+function logNewsPreferenceForUser(user_id, news_id, prefer_status) {
+    client.request('logNewsPreferenceForUser', [user_id, news_id, prefer_status], function(err, error, response) {
+            if (err) throw err;
+            console.log(response);
+        });
+}
+
 module.exports = {
     add: add,
     getNewsSummariesForUser: getNewsSummariesForUser,
-    logNewsClickForUser: logNewsClickForUser
+    logNewsClickForUser: logNewsClickForUser,
+    logNewsPreferenceForUser: logNewsPreferenceForUser
 };

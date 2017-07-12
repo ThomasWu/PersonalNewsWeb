@@ -14,6 +14,7 @@ module.exports = (req, res, next) => {
 
     return jwt.verify(token, config.jwtSecret, (err, decoded) => {
         if (err) {
+            console.log('authentication failed');
             return res.status(401).end();
         }
 

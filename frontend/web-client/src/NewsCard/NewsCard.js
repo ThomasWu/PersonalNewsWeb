@@ -11,7 +11,7 @@ class NewsCard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            like_status: 0,
+            like_status: props.news.liked || 0,
             to_be_deleted: false
         };
     }
@@ -23,6 +23,29 @@ class NewsCard extends React.Component {
 
     sendClickLog() {
         let url = `http://localhost:3000/news/userId/${Auth.getEmail()}/click/${this.props.news.digest}`;
+        let request = new Request(encodeURI(url), {
+            method: 'POST',
+            headers: {
+                'Authorization': 'bearer ' + Auth.getToken(),
+            },
+            cache: false
+        });
+        fetch(request);
+    }
+
+    updateLikeStatus(user_action) {
+        let like_status = user_action;
+        if (this.state.like_status == user_action) {
+            like_status = 0;
+        }
+        this.setState({
+            like_status: like_status
+        });
+        this.sendPreferenceLog(like_status);
+    }
+
+    sendPreferenceLog(prefer_status) {
+        let url = `http://localhost:3000/news/userId/${Auth.getEmail()}/prefer/${this.props.news.digest}/${prefer_status}`;
         let request = new Request(encodeURI(url), {
             method: 'POST',
             headers: {
@@ -60,36 +83,18 @@ class NewsCard extends React.Component {
                                         <button className="btn-floating btn-flat"
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                let like_status = this.state.like_status;
-                                                if (like_status != 1) {
-                                                    this.setState({
-                                                        like_status: 1
-                                                    });
-                                                } else {
-                                                    this.setState({
-                                                        like_status: 0
-                                                    });
-                                                }
+                                                this.updateLikeStatus(1);
                                             }}>
-                                            <i className={'material-icons ' + ((this.state.like_status == 1 && 'green-text') || (this.state.like_status != 1 && 'grey-text'))}>
+                                            <i className={'material-icons ' + ((this.state.like_status == 1 && 'green-text') || 'grey-text')}>
                                                 thumb_up
                                             </i>
                                         </button>
                                         <button className="btn-floating btn-flat"
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                let like_status = this.state.like_status;
-                                                if (like_status != 2) {
-                                                    this.setState({
-                                                        like_status: 2
-                                                    });
-                                                } else {
-                                                    this.setState({
-                                                        like_status: 0
-                                                    });
-                                                }
+                                                this.updateLikeStatus(-1);
                                             }}>
-                                            <i className={'material-icons ' + ((this.state.like_status == 2 && 'red-text') || (this.state.like_status != 2 && 'grey-text'))}>
+                                            <i className={'material-icons ' + ((this.state.like_status == -1 && 'red-text') || 'grey-text')}>
                                                 thumb_down
                                             </i>
                                         </button>
@@ -122,6 +127,7 @@ class NewsCard extends React.Component {
                                         </button>
                                         <button className="btn-floating btn-flat"
                                             onClick={(e) => {
+                                                this.sendPreferenceLog('-2');
                                                 this.props.hideNews(this.props.news);
                                             }}>
                                             <i className="material-icons green-text">

@@ -35,6 +35,14 @@ redis_client = redis.StrictRedis(REDIS_HOST, REDIS_PORT, db=0)
 cloudAMQP_client = CloudAMQPClient(task=LOG_CLICKS_AMQP_TASK)
 
 def getNewsSummariesForUser(user_id, page_num):
+    # retrieves user history
+    user_liked_news_buff = redis_client.get(user_id+'liked')
+    user_liked_news = pickle.loads(user_liked_news_buff) if user_liked_news_buff is not None else set()
+    user_disliked_news_buff = redis_client.get(user_id+'disliked')
+    user_disliked_news = pickle.loads(user_disliked_news_buff) if user_disliked_news_buff is not None else set()
+    user_hided_news_buff = redis_client.get(user_id+'hided')
+    user_hided_news = pickle.loads(user_hided_news_buff) if user_hided_news_buff is not None else set()
+
     page_num = int(page_num)
     begin_index = (page_num - 1) * NEWS_LIST_BATCH_SIZE
     end_index = page_num * NEWS_LIST_BATCH_SIZE
@@ -48,7 +56,7 @@ def getNewsSummariesForUser(user_id, page_num):
         sliced_news_digests = news_digests[begin_index: end_index]
         sliced_news = list(db[NEWS_TABLE_NAME].find({'digest': {'$in': sliced_news_digests}}))
     else:
-        total_news = list(db[NEWS_TABLE_NAME].find().sort([('publishedAt', -1)]).limit(NEWS_LIMIT))
+        total_news = list(db[NEWS_TABLE_NAME].find({'digest': {'$nin': list(user_disliked_news | user_hided_news)}}).sort([('publishedAt', -1)]).limit(NEWS_LIMIT))
         total_news_digests = [news['digest'] for news in total_news]
 
         redis_client.set(user_id, pickle.dumps(total_news_digests))
@@ -68,17 +76,22 @@ def getNewsSummariesForUser(user_id, page_num):
         del news['text']
         # if news['class'] == topPreference:
         #     news['reason'] = 'Recommend'
+        if news['digest'] in user_liked_news:
+            news['liked'] = 1 
         if news['publishedAt'].date() == datetime.today().date():
             news['time'] = 'today'
     return json.loads(dumps(sliced_news))
 
 def logNewsClickForUser(user_id, news_id):
-    message = {'userId': user_id, 'newsId': news_id, 'timestamp': datetime.utcnow()}
+    print type(user_id), user_id
+    print type(news_id), news_id
+    message = {'userId': user_id, 'newsId': news_id, 'timestamp': str(datetime.utcnow())}
 
     db = mongodb_client.get_db()
     db[CLICK_LOGS_TABLE_NAME].insert(message)
 
-    message['timestamp'] = str(message['timestamp'])
+    message = {'userId': user_id, 'newsId': news_id, 'timestamp': message['timestamp']}
+
     cloudAMQP_client.sendMessage(message)
 
 def logNewsPreferenceForUser(user_id, news_id, prefer_status):
@@ -112,6 +125,9 @@ def logNewsPreferenceForUser(user_id, news_id, prefer_status):
         user_liked_news.add(news_id)
 
     # stores into redis
-    redis_client.get(user_id+'liked', pickle.dumps(user_liked_news))
-    redis_client.get(user_id+'disliked', pickle.dumps(user_disliked_news))
-    redis_client.get(user_id+'hided', pickle.dumps(user_hided_news))
+    redis_client.set(user_id+'liked', pickle.dumps(user_liked_news))
+    redis_client.expire(user_id+'liked', USER_NEWS_TIME_OUT_IN_SECOND)
+    redis_client.set(user_id+'disliked', pickle.dumps(user_disliked_news))
+    redis_client.expire(user_id+'disliked', USER_NEWS_TIME_OUT_IN_SECOND)
+    redis_client.set(user_id+'hided', pickle.dumps(user_hided_news))
+    redis_client.expire(user_id+'hided', USER_NEWS_TIME_OUT_IN_SECOND)

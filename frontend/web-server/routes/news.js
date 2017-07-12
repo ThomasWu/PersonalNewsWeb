@@ -47,4 +47,15 @@ router.post('/userId/:userId/click/:newsId', function(req, res, next) {
     res.status(200);
 }); 
 
+// Log a user's like/dislike/hide action on a news
+router.post('/userId/:userId/prefer/:newsId/:prefer_status', function(req, res, next) {
+    user_id = req.params['userId'];
+    news_id = req.params['newsId'];
+    prefer_status = req.params['prefer_status'];
+    console.log(`Logging preference event on ${news_id} for ${user_id} with status ${prefer_status} (-2: hide, -1: dislike, 0: no preference, 1: like)`);
+
+    rpc_client.logNewsPreferenceForUser(user_id, news_id, prefer_status);
+    res.status(200);
+}); 
+
 module.exports = router;

@@ -26,6 +26,8 @@ class CloudAMQPClient:
 
     # sends a message
     def sendMessage(self, message):
+        print type(message)
+        print message
         self.channel.basic_publish(
             exchange='',
             routing_key=self.queue_name,
