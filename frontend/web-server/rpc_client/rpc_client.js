@@ -22,23 +22,24 @@ function getNewsSummariesForUser(user_id, page_num, callback) {
             if (err) throw err;
             console.log(response);
             callback(response);
-        });
+        }
+    );
 }
 
 // Log a user's click event on a news
 function logNewsClickForUser(user_id, news_id) {
-    client.request('logNewsClickForUser', [user_id, news_id], function(err, error, response) {
+    client.request('logNewsClickForUser', [user_id, news_id], null, function(err) {
             if (err) throw err;
-            console.log(response);
-        });
+        }
+    );
 }
 
 // Log a user's like/dislike/hide action on a news
 function logNewsPreferenceForUser(user_id, news_id, prefer_status) {
-    client.request('logNewsPreferenceForUser', [user_id, news_id, prefer_status], function(err, error, response) {
+    client.request('logNewsPreferenceForUser', [user_id, news_id, prefer_status], null, function(err) {
             if (err) throw err;
-            console.log(response);
-        });
+        }
+    );
 }
 
 module.exports = {

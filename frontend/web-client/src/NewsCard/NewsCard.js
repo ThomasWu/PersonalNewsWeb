@@ -22,8 +22,8 @@ class NewsCard extends React.Component {
     }
 
     sendClickLog() {
-        let url = `http://localhost:3000/news/userId/${Auth.getEmail()}/click/${this.props.news.digest}`;
-        let request = new Request(encodeURI(url), {
+        let url = `http://localhost:3000/news/userId/${encodeURIComponent(Auth.getEmail())}/click/${encodeURIComponent(this.props.news.digest)}`;
+        let request = new Request(url, {
             method: 'POST',
             headers: {
                 'Authorization': 'bearer ' + Auth.getToken(),
@@ -45,8 +45,8 @@ class NewsCard extends React.Component {
     }
 
     sendPreferenceLog(prefer_status) {
-        let url = `http://localhost:3000/news/userId/${Auth.getEmail()}/prefer/${this.props.news.digest}/${prefer_status}`;
-        let request = new Request(encodeURI(url), {
+        let url = `http://localhost:3000/news/userId/${encodeURIComponent(Auth.getEmail())}/prefer/${encodeURIComponent(this.props.news.digest)}/${prefer_status}`;
+        let request = new Request(url, {
             method: 'POST',
             headers: {
                 'Authorization': 'bearer ' + Auth.getToken(),
