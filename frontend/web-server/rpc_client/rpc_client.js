@@ -8,7 +8,7 @@ let log = (message) => {
 
 var client = jayson.client.http({
     port: 4040,
-    hostname: 'http://34.225.190.34'
+    hostname: 'localhost'
 });
 
 // Testing method

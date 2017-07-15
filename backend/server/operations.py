@@ -20,6 +20,7 @@ from logger import Logger
 """
     Configs
 """
+<<<<<<< 38602ce03eca34cd2f2380fded123b846d4c568a
 <<<<<<< 2750d386d3c466d2c0bcb2529df255d6bbcf9fd3
 SYSTEM_NAME = 'backend_server'
 
@@ -28,6 +29,9 @@ REDIS_HOST = REDIS_SETTINGS['host']
 REDIS_PORT = REDIS_SETTINGS['port']
 =======
 REDIS_HOST = 'newssystemcache.3rkefe.ng.0001.use1.cache.amazonaws.com'
+=======
+REDIS_HOST = 'newsservercache.3rkefe.ng.0001.use1.cache.amazonaws.com'
+>>>>>>> running version
 REDIS_PORT = 6379
 >>>>>>> Fixed redis to amazon cache
 
