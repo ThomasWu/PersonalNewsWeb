@@ -2,7 +2,7 @@ import pyjsonrpc
 import operations
 
 SERVER_HOST = 'localhost'
-SERVER_PORT = 4040
+SERVER_PORT = 80
 
 class RequestHandler(pyjsonrpc.HttpRequestHandler):
     @pyjsonrpc.rpcmethod
