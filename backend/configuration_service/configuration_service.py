@@ -4,7 +4,7 @@ import json
 import pyjsonrpc
 
 SERVER_HOST = 'localhost'
-SERVER_PORT = 4040
+SERVER_PORT = 4041
 
 SETTINGS_FILE = 'configurations.json'
 SETTINGS = {}
