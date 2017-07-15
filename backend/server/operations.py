@@ -18,7 +18,7 @@ from cloudAMQP_client import CloudAMQPClient
 """
     Configs
 """
-REDIS_HOST = 'localhost'
+REDIS_HOST = 'newssystemcache.3rkefe.ng.0001.use1.cache.amazonaws.com'
 REDIS_PORT = 6379
 
 NEWS_TABLE_NAME = 'news'
