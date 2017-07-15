@@ -8,14 +8,17 @@ import redis
 # import modules from common folder
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 
-import news_api_client
-import configuration_service_client as conf_client
+from news_api_client import NewsApiClient
+import configuration_service_client
 from cloudAMQP_client import CloudAMQPClient
+from logger import Logger
 
 # NEWS_SOURCES ues default setting
+SYSTEM_NAME = 'news-monitor'
 
-REDIS_HOST = 'localhost'
-REDIS_PORT = 6379
+REDIS_SETTINGS = configuration_service_client.getSystemSettings('redis')
+REDIS_HOST = REDIS_SETTINGS['host']
+REDIS_PORT = REDIS_SETTINGS['port']
 
 NEWS_TIME_OUT_IN_SECONDS = 3600 * 24 * 1 # One day
 SLEEP_TIME_IN_SECONDS = 10
@@ -25,9 +28,11 @@ redis_client = redis.StrictRedis(REDIS_HOST, REDIS_PORT)
 SCRAPE_NEWS_AMQP_TASK = 'scrape_news_task'
 
 cloudAMQP_client = CloudAMQPClient(task=SCRAPE_NEWS_AMQP_TASK)
+news_api_client = NewsApiClient()
+logger = Logger(SYSTEM_NAME)
 
 while True:
-    news_list = news_api_client.getNewsFromSources()
+    news_list = news_api_client.getNews()
     num_of_new_news = 0
 
     for news in news_list:
@@ -49,4 +54,5 @@ while True:
 	#if num_of_new_news > 0:
     print datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
     print 'fetched %d news.' % num_of_new_news
+    logger.log('Fetched %d new news from %d' % (len(news_list), num_of_new_news))
     cloudAMQP_client.sleep(SLEEP_TIME_IN_SECONDS)

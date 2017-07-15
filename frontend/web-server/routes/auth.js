@@ -2,12 +2,19 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const validator = require('validator');
+const logger = require('../logger/logger');
+
+const SECTION = 'auth-route';
+let log = (message) => {
+    logger.log(SECTION, message);
+}
 
 router.post('/signup', (req, res, next) => {
     console.log('[Auth route]');
     const validationResult = validateSignupForm(req.body);
     if (!validationResult.success) {
         console.log('[Auth route]','validation failed');
+        log(`${req.ip} signup information ${req.body} validation failed`);
         return res.status(400).json({
             success: false,
             message: validationResult.message,
@@ -19,6 +26,7 @@ router.post('/signup', (req, res, next) => {
             console.log('[Auth route]',err);
             // check if Mongo DB error
             if (err.name === 'MongoError' && err.code === 11000) {
+                log(`${req.ip} signup failed due to MongoError`);
                 return res.status(409).json({
                     success: false,
                     message: 'Check the form for wrong inputs.',
@@ -28,12 +36,14 @@ router.post('/signup', (req, res, next) => {
                 });
             } 
             // other errors
+            log(`${req.ip} signup failed due to ${err}`);
             return res.status(400).json({
                 success: false,
                 message: 'Could not process the signup request.'
             });
         }
         console.log('[Auth route]', 'Succeed');
+        log(`${req.ip} signup succeeded as ${req.body.email}`);
         return res.status(200).json({
             success: true,
             message: 'Signup succeeded'
@@ -44,6 +54,7 @@ router.post('/signup', (req, res, next) => {
 router.post('/login', (req, res, next) => {
     const validationResult = validateLoginForm(req.body);
     if (!validationResult.success) {
+        log(`${req.ip} login information ${req.body} validation failed`);
         return res.status(400).json({
         success: false,
         message: validationResult.message,
@@ -54,18 +65,21 @@ router.post('/login', (req, res, next) => {
     return passport.authenticate('local-login', (err, token, userData) => {
         if (err) {
             if (err.name === 'IncorrectCredentialsError') {
+                log(`${req.ip} login failed due to IncorrectCredentialsError`);
                 return res.status(400).json({
                 success: false,
                 message: err.message
                 });
             }
 
+            log(`${req.ip} login failed due to ${err.name}`);
             return res.status(400).json({
                 success: false,
                 message: 'Could not process the form: ' + err.message
             });
         }
 
+        log(`${req.ip} login succeed as ${req.body.email}`);
         return res.json({
             success: true,
             message: 'You have successfully logged in!',

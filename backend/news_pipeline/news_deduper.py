@@ -9,6 +9,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 
 import mongodb_client
 from cloudAMQP_client import CloudAMQPClient
+from logger import Logger
+
+SYSTEM_NAME = 'news-deduper'
 
 DEDUPE_NEWS__AMQP_TASK = 'dedupe_news_task'
 
@@ -19,6 +22,7 @@ SAME_NEWS_SIMILARITY_THRESHOLD = 0.9
 NEWS_TABLE_NAME = 'news'
 
 cloudAMQP_client = CloudAMQPClient(task=DEDUPE_NEWS__AMQP_TASK)
+logger = Logger(SYSTEM_NAME)
 
 def handle_msg(msg):
     if msg is None or not isinstance(msg, dict):
@@ -27,6 +31,7 @@ def handle_msg(msg):
     task['text'] = task['text'].encode('utf-8', errors='replace')
     text = str(task['text'])
     if text is None:
+        logger.log('Skipped empty news %s' % task['digest'])
         return
 
     published_at = parser.parse(task['publishedAt'])
@@ -56,11 +61,13 @@ def handle_msg(msg):
 
         for row in range(1, rows):
             if pairwise_sim[row, 0] > SAME_NEWS_SIMILARITY_THRESHOLD:
+                logger.log('Ignored duplicated news %s' % task['digest'])
                 print 'ignoring duplicated news'
                 return
 
     print datetime.datetime.utcnow().strftime('%Y-%m-%d %H-%M-%SZ'),
     print 'inserting news with digest %s' % task['digest']
+    logger.log('Inserted new news %s into database' % task['digest'])
     task['publishedAt'] = parser.parse(task['publishedAt'])
     db[NEWS_TABLE_NAME].replace_one({'digest': task['digest']}, task, upsert=True)
 

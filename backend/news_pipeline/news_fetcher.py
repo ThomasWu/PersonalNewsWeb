@@ -9,6 +9,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'scrapers'))
 
 #import cnn_news_scrapper
 from cloudAMQP_client import CloudAMQPClient
+from logger import Logger
+
+SYSTEM_NAME = 'news-fetcher'
 
 SLEEP_TIME_IN_SECONDS = 5
 
@@ -17,6 +20,7 @@ SCRAPE_NEWS_AMQP_TASK = 'scrape_news_task'
 
 dedupe_news_queue_client = CloudAMQPClient(task=DEDUPE_NEWS_AMQP_TASK)
 scrape_news_queue_client = CloudAMQPClient(task=SCRAPE_NEWS_AMQP_TASK)
+logger = Logger(SYSTEM_NAME)
 
 def handle_message(msg):
 	if msg is None or not isinstance(msg, dict):
@@ -34,6 +38,7 @@ def handle_message(msg):
 	
 	print datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
 	print 'Downloaded url: %s' % task['url']
+	logger.log('Downloaded url: %s' % task['url'])
 	dedupe_news_queue_client.sendMessage(task)
 
 while True:

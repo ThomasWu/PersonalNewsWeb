@@ -1,7 +1,9 @@
 {
     "services": {
-        "recommendation_service": {},
-        "configuration_service": {}
+        "recommendation_service": {
+            "host": "localhost",
+            "port": "1234"
+        }
     },
     "mongodb": {
         "username": "admin",
@@ -15,7 +17,7 @@
         "port": "25782"
     },
     "redis": {
-        "host": "localhost",
+        "host": "newsservercache.3rkefe.ng.0001.use1.cache.amazonaws.com",
         "port": 6379
     },
     "amqp": {
@@ -26,5 +28,20 @@
             "scrape_news_task": "raw_news",
             "dedupe_news_task": "complete_news"
         }
+    },
+    "news-api": {
+        "api-endpoint": "https://newsapi.org/v1/articles",
+        "api-key": "695bc4c0157c49ceab9ccb45e78dc009",
+        "sources": [
+            "bbc-news",
+            "bbc-sport",
+            "bloomberg",
+            "cnn",
+            "daily-mail",
+            "espn",
+            "financial-times",
+            "google-news",
+            "the-new-york-times"
+        ]
     }
 }

@@ -1,6 +1,12 @@
 var express = require('express');
 var rpc_client = require('../rpc_client/rpc_client');
 var router = express.Router();
+const logger = require('../logger/logger');
+
+const SECTION = 'news-route';
+let log = (message) => {
+    logger.log(SECTION, message);
+}
 
 router.get('/', function(req, res, next) {
     var news = [
@@ -27,12 +33,13 @@ router.get('/', function(req, res, next) {
     res.json(news);
 });
 
-router.get('/userId/:userId/pageNum/:pageNum', function(req, res, next) {
+router.get('/userId/:userId/pageNum/:pageNum', (req, res, next) => {
     user_id = req.params['userId'];
     page_num = req.params['pageNum'];
     console.log(`Fetching news for ${user_id} on page ${page_num}`);
 
-    rpc_client.getNewsSummariesForUser(user_id, page_num, function(response) {
+    rpc_client.getNewsSummariesForUser(user_id, page_num, (response) => {
+        log(`${user_id} successfully fetched news`);
         res.json(response);
     });
 })
@@ -42,7 +49,8 @@ router.post('/userId/:userId/click/:newsId', function(req, res, next) {
     user_id = req.params['userId'];
     news_id = req.params['newsId'];
     console.log(`Logging click event on ${news_id} for ${user_id}`);
-
+    
+    log(`${user_id} cliked news ${news_id}`);
     rpc_client.logNewsClickForUser(user_id, news_id);
     res.status(200);
 }); 
@@ -53,7 +61,7 @@ router.post('/userId/:userId/prefer/:newsId/:prefer_status', function(req, res, 
     news_id = req.params['newsId'];
     prefer_status = req.params['prefer_status'];
     console.log(`Logging preference event on ${news_id} for ${user_id} with status ${prefer_status} (-2: hide, -1: dislike, 0: no preference, 1: like)`);
-
+    log(`Logging preference event on ${news_id} for ${user_id} with status ${prefer_status} (-2: hide, -1: dislike, 0: no preference, 1: like)`);
     rpc_client.logNewsPreferenceForUser(user_id, news_id, prefer_status);
     res.status(200);
 }); 
