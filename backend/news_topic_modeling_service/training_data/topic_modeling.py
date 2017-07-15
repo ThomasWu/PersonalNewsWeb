@@ -15,7 +15,7 @@ learn = tf.contrib.learn
 DATA_SET_FILE = './labeled_news.csv'
 
 MAX_DOCUMENT_LENGTH = 500
-N_CLASSES = 17
+N_CLASSES = 7
 
 
 EMBEDDING_SIZE = 100
