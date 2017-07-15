@@ -20,11 +20,16 @@ from logger import Logger
 """
     Configs
 """
+<<<<<<< 2750d386d3c466d2c0bcb2529df255d6bbcf9fd3
 SYSTEM_NAME = 'backend_server'
 
 REDIS_SETTINGS = configuration_service_client.getSystemSettings('redis')
 REDIS_HOST = REDIS_SETTINGS['host']
 REDIS_PORT = REDIS_SETTINGS['port']
+=======
+REDIS_HOST = 'newssystemcache.3rkefe.ng.0001.use1.cache.amazonaws.com'
+REDIS_PORT = 6379
+>>>>>>> Fixed redis to amazon cache
 
 MONGODB_SETTINGS = configuration_service_client.getSystemSettings('mongodb')
 NEWS_TABLE_NAME = MONGODB_SETTINGS['tables']['news_table']
