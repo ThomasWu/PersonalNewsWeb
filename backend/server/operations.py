@@ -12,17 +12,22 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 
 import mongodb_client
 import news_recommendation_service_client
-
+import configuration_service_client
 from cloudAMQP_client import CloudAMQPClient
+from logger import Logger
 
 """
     Configs
 """
-REDIS_HOST = 'localhost'
-REDIS_PORT = 6379
+SYSTEM_NAME = 'backend_server'
 
-NEWS_TABLE_NAME = 'news'
-CLICK_LOGS_TABLE_NAME = 'click_logs'
+REDIS_SETTINGS = configuration_service_client.getSystemSettings('redis')
+REDIS_HOST = REDIS_SETTINGS['host']
+REDIS_PORT = REDIS_SETTINGS['port']
+
+MONGODB_SETTINGS = configuration_service_client.getSystemSettings('mongodb')
+NEWS_TABLE_NAME = MONGODB_SETTINGS['tables']['news_table']
+CLICK_LOGS_TABLE_NAME = MONGODB_SETTINGS['tables']['click_logs_table']
 
 NEWS_LIMIT = 100
 NEWS_LIST_BATCH_SIZE = 10
@@ -33,6 +38,7 @@ LOG_CLICKS_AMQP_TASK = 'log_clicks_task'
 # initiate service clients
 redis_client = redis.StrictRedis(REDIS_HOST, REDIS_PORT, db=0)
 cloudAMQP_client = CloudAMQPClient(task=LOG_CLICKS_AMQP_TASK)
+logger = Logger(SYSTEM_NAME)
 
 def getNewsSummariesForUser(user_id, page_num):
     # retrieves user history
@@ -80,11 +86,16 @@ def getNewsSummariesForUser(user_id, page_num):
             news['liked'] = 1 
         if news['publishedAt'].date() == datetime.today().date():
             news['time'] = 'today'
+    
+    logger.log('GetNews', 'Fetched %d news for %s' % (len(sliced_news), user_id))
+
     return json.loads(dumps(sliced_news))
 
 def logNewsClickForUser(user_id, news_id):
     print type(user_id), user_id
     print type(news_id), news_id
+    logger.log('LogClicks', 'Logged %s clicked on %s' % (user_id, news_id))
+
     message = {'userId': user_id, 'newsId': news_id, 'timestamp': str(datetime.utcnow())}
 
     db = mongodb_client.get_db()
@@ -95,6 +106,7 @@ def logNewsClickForUser(user_id, news_id):
     cloudAMQP_client.sendMessage(message)
 
 def logNewsPreferenceForUser(user_id, news_id, prefer_status):
+    logger.log('LogPreference', 'Logged %s\'s preference %s on %s' % (user_id, prefer_status, news_id))
     user_liked_news_buff = redis_client.get(user_id+'liked')
     user_liked_news = pickle.loads(user_liked_news_buff) if user_liked_news_buff is not None else set()
     user_disliked_news_buff = redis_client.get(user_id+'disliked')

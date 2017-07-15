@@ -1,11 +1,15 @@
 import requests
 from json import loads
+import configuration_service_client as conf_client
 
 class NewsApiClient(object):
-    def __init__(self, sources, apiKey, url, sortBy='top'):
-        self.sources = sources
-        self.url = url
-        self.apiKey = apiKey
+    SYSTEM_NAME = 'news-api'
+
+    def __init__(self, sortBy='top'):
+        self.settings = conf_client.getSystemSettings(self.SYSTEM_NAME)
+        self.sources = self.settings['sources']
+        self.url = self.settings['api-endpoint']
+        self.apiKey = self.settings['api-key']
         self.sortBy = sortBy
         
     def changeSources(self, newSources):

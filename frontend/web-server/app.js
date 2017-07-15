@@ -32,6 +32,9 @@ passport.use('local-signup', localSignupStrategy);
 passport.use('local-login', localLoginStrategy);
 
 app.use(cors());
+// basic logging middleware
+const basicLoggerMiddleware = require('./middleware/basic_logger');
+app.use(basicLoggerMiddleware);
 
 app.use('/', index);
 app.use('/auth', auth);

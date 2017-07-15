@@ -1,6 +1,12 @@
 const jwt = require('jsonwebtoken');
 const User = require('mongoose').model('User');
 const config = require('../config/config.json');
+const logger = require('../logger/logger');
+
+const SECTION = 'auth-checker';
+let log = (message) => {
+    logger.log(SECTION, message);
+}
 
 module.exports = (req, res, next) => {
     console.log('auth_checker: req: ' + req.headers);
