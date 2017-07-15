@@ -25,7 +25,7 @@ class LoginPage extends Component {
         const email = this.state.user.email;
         const password = this.state.user.password;
 
-        fetch('/auth/login', {
+        fetch('auth/login', {
             method: 'POST',
             cache: false,
             headers: {
