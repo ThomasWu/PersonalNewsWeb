@@ -128,6 +128,7 @@ def logNewsClickForUser(user_id, news_id):
     message = {'userId': user_id, 'newsId': news_id, 'timestamp': str(datetime.utcnow())}
     db = mongodb_client.get_db()
     db[CLICK_LOGS_TABLE_NAME].insert(message)
+<<<<<<< HEAD
 <<<<<<< 2ae1cad33a46a4b7c33cd62a5d40c24ff2046f9a
 
     message = {'userId': user_id, 'newsId': news_id, 'timestamp': message['timestamp'], 'event': 'click'}
@@ -135,6 +136,9 @@ def logNewsClickForUser(user_id, news_id):
 =======
     message = {'userId': user_id, 'newsId': news_id, 'timestamp': message['timestamp']}
 >>>>>>> Minor fix
+=======
+    message = {'userId': user_id, 'newsId': news_id, 'timestamp': message['timestamp']}
+>>>>>>> d28b392a7a5c331139a21d24be073f6c7bc165ff
     cloudAMQP_client.sendMessage(message)
 
 def logNewsPreferenceForUser(user_id, news_id, prefer_status):
@@ -181,9 +185,13 @@ def logNewsPreferenceForUser(user_id, news_id, prefer_status):
     redis_client.set(user_id+'disliked', pickle.dumps(user_disliked_news))
     redis_client.expire(user_id+'disliked', USER_PREFERENCE_TIME_OUT_IN_SECOND)
     redis_client.set(user_id+'hided', pickle.dumps(user_hided_news))
+<<<<<<< HEAD
 <<<<<<< 2ae1cad33a46a4b7c33cd62a5d40c24ff2046f9a
     redis_client.expire(user_id+'hided', USER_NEWS_TIME_OUT_IN_SECOND)
 
 =======
     redis_client.expire(user_id+'hided', USER_PREFERENCE_TIME_OUT_IN_SECOND)
 >>>>>>> Minor fix
+=======
+    redis_client.expire(user_id+'hided', USER_PREFERENCE_TIME_OUT_IN_SECOND)
+>>>>>>> d28b392a7a5c331139a21d24be073f6c7bc165ff
