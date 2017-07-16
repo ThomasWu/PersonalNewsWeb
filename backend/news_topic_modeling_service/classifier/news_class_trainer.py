@@ -14,11 +14,11 @@ learn = tf.contrib.learn
 REMOVE_PREVIOUS_MODEL = True
 
 MODEL_OUTPUT_DIR = '../model/'
-DATA_SET_FILE = '../training_data/labeled_news.csv'
+DATA_SET_FILE = '../training_data/expanded_labeled_news.csv'
 VARS_FILE = '../model/vars'
 VOCAB_PROCESSOR_SAVE_FILE = '../model/vocab_processor_save_file'
 MAX_DOCUMENT_LENGTH = 100
-N_CLASSES = 17
+N_CLASSES = 6
 
 # Training parms
 STEPS = 200
@@ -29,7 +29,8 @@ def main(unused_argv):
         os.mkdir(MODEL_OUTPUT_DIR)
     
     df = pd.read_csv(DATA_SET_FILE, header=None)
-    train_df = df[0:400]
+    df = df.sample(frac=1)
+    train_df = df[0:len(df)*4/5]
     test_df = df.drop(train_df.index)
 
     x_train = train_df[1]
