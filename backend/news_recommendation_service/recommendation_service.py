@@ -26,8 +26,7 @@ def isClose(a, b, rel_tol=1e-09, abs_tol=0.0):
 class RequestHandler(pyjsonrpc.HttpRequestHandler):
     @pyjsonrpc.rpcmethod
     def getPreferenceForUser(self, user_id):
-        db = mongodb_client.get_db(host=MONGO_DB_HOST, port=MONGO_DB_PORT, db=MONGO_DB_NAME)
-        db.authenticate(MONGO_DB_USERNAME, MONGO_DB_PASSWORD)
+        db = mongodb_client.get_db()
         
         model = db[PREFERENCE_MODEL_TABLE_NAME].find_one({'userId': user_id})
         if model is None:

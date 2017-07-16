@@ -9,9 +9,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 import mongodb_client
 from cloudAMQP_client import CloudAMQPClient
 
-NUM_OF_CLASSES = 17
+NUM_OF_CLASSES = 6
 INITIAL_P = 1.0 / NUM_OF_CLASSES
-ALPHA = 0.1
+CLICK_ALPHA = 0.1
+LIKE_PROMOTE = 1.5
+DISLIKE_PENALTY = 0.5
+HIDE_PENALTY = 0.1
 
 SLEEP_TIME_IN_SECONDS = 1
 
@@ -26,11 +29,12 @@ def handle_message(msg):
     if msg is None or not isinstance(msg, dict):
         return
 
-    if ('userId' not in msg or 'newsId' not in msg or 'timestamp' not in msg):
+    if ('userId' not in msg or 'newsId' not in msg or 'timestamp' not in msg or 'event' not in msg):
         return
 
     userId = msg['userId']
     newsId = msg['newsId']
+    event = msg['event']
 
     db = mongodb_client.get_db()
     model = db[PREFERENCE_MODEL_TABLE_NAME]
@@ -55,12 +59,33 @@ def handle_message(msg):
 
     click_class = news['class']
 
-    old_p = model['preference'][click_class]
-    model['preference'][click_class] = float((1 - ALPHA) * old_p + ALPHA)
+    if event == 'click':
+        old_p = model['preference'][click_class]
+        model['preference'][click_class] = float((1 - CLICK_ALPHA) * old_p + CLICK_ALPHA)
 
-    for i, prob in model['preference'].iteritems():
-        if not i == click_class:
-            model['preference'][i] = float((1 - ALPHA) * model['preference'][i])
+        for i, prob in model['preference'].iteritems():
+            if not i == click_class:
+                model['preference'][i] = float((1 - CLICK_ALPHA) * model['preference'][i])
+    elif event == 'like':
+        old_p = model['preference'][click_class]
+        model['preference'][click_class] = old_p * LIKE_PROMOTE
+        for i, prob in model['preference'].iteritems():
+            if not i == click_class:
+                model['preference'][i] = float((1 - CLICK_ALPHA) * model['preference'][i])
+    elif event == 'dislike':
+        old_p = model['preference'][click_class]
+        model['preference'][click_class] = old_p * DISLIKE_PENALTY
+        delta = model['preference'][click_class] - old_p
+        for i, prob in model['preference'].iteritems():
+            if not i == click_class:
+                model['preference'][i] = model['preference'][i] - delta / 5   
+    elif event == 'hide':
+        old_p = model['preference'][click_class]
+        model['preference'][click_class] = HIDE_PENALTY if old_p > HIDE_PENALTY else 0
+        delta = model['preference'][click_class] - old_p
+        for i, prob in model['preference'].iteritems():
+            if not i == click_class:
+                model['preference'][i] = model['preference'][i] - delta / 5    
 
     db[PREFERENCE_MODEL_TABLE_NAME].replace_one({'userId': userId}, model, upsert=True)
 

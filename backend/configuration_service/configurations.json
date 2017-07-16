@@ -1,9 +1,7 @@
 {
-    "services": {
-        "recommendation_service": {
-            "host": "localhost",
-            "port": "1234"
-        }
+    "recommendation_service": {
+        "host": "localhost",
+        "port": "6060"
     },
     "mongodb": {
         "username": "admin",

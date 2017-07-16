@@ -1,10 +1,10 @@
 import pyjsonrpc
+import configuration_service_client as conf_client
 
-class NewsTopicModelingServiceClient(object):
-    def __init__(self, url):
-        self.url = url
-        self.client = pyjsonrpc.HttpClient(url=self.url)
+URL = 'http://localhost:6060'
 
-    def classify(self, text):
-        topic = self.client.call('classify', text)
-        return topic
+client = pyjsonrpc.HttpClient(url=URL)
+
+def classify(text):
+    topic = client.call('classify', text)
+    return topic

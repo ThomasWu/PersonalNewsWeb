@@ -3,6 +3,7 @@ import numpy as np
 import os
 import pandas as pd
 import pickle
+import json
 import pyjsonrpc
 import sys
 import tensorflow as tf
@@ -50,7 +51,7 @@ def loadModel():
         model_fn=news_cnn_model.generate_cnn_model(N_CLASSES, n_words),
         model_dir=MODEL_DIR
     )
-    df = pd.read_csv('../training_data/labeld_news.csv', header=None)
+    df = pd.read_csv('../training_data/labeled_news.csv', header=None)
 
     train_df = df[0:400]
     x_train = train_df[1]

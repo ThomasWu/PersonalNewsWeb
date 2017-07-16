@@ -40,6 +40,7 @@ router.get('/userId/:userId/pageNum/:pageNum', (req, res, next) => {
 
     rpc_client.getNewsSummariesForUser(user_id, page_num, (response) => {
         log(`${user_id} successfully fetched news`);
+        console.log('news received');
         res.json(response);
     });
 })

@@ -16,7 +16,7 @@ REMOVE_PREVIOUS_MODEL = True
 MODEL_OUTPUT_DIR = '../model/'
 DATA_SET_FILE = '../training_data/labeled_news.csv'
 VARS_FILE = '../model/vars'
-VOCAB_PROCESSOR_SAVE_FILE = '../model/vocab_procesor_save_file'
+VOCAB_PROCESSOR_SAVE_FILE = '../model/vocab_processor_save_file'
 MAX_DOCUMENT_LENGTH = 100
 N_CLASSES = 17
 

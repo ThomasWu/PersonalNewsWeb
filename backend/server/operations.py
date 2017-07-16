@@ -70,8 +70,7 @@ def getNewsSummariesForUser(user_id, page_num):
 
         sliced_news = total_news[begin_index: end_index]
 
-    # TODO: Add preference
-    # preference = news_recommendation_service_client.getPreferenceForUser(user_id)
+    preference = news_recommendation_service_client.getPreferenceForUser(user_id)
     preference = None
     topPreference = None
 
@@ -80,8 +79,8 @@ def getNewsSummariesForUser(user_id, page_num):
 
     for news in sliced_news:
         del news['text']
-        # if news['class'] == topPreference:
-        #     news['reason'] = 'Recommend'
+        if news['class'] == topPreference:
+            news['reason'] = 'Recommend'
         if news['digest'] in user_liked_news:
             news['liked'] = 1 
         if news['publishedAt'].date() == datetime.today().date():
@@ -101,7 +100,7 @@ def logNewsClickForUser(user_id, news_id):
     db = mongodb_client.get_db()
     db[CLICK_LOGS_TABLE_NAME].insert(message)
 
-    message = {'userId': user_id, 'newsId': news_id, 'timestamp': message['timestamp']}
+    message = {'userId': user_id, 'newsId': news_id, 'timestamp': message['timestamp'], 'event': 'click'}
 
     cloudAMQP_client.sendMessage(message)
 
@@ -114,13 +113,17 @@ def logNewsPreferenceForUser(user_id, news_id, prefer_status):
     user_hided_news_buff = redis_client.get(user_id+'hided')
     user_hided_news = pickle.loads(user_hided_news_buff) if user_hided_news_buff is not None else set()
     
+    message = {'userId': user_id, 'newsId': news_id, 'timestamp': message['timestamp']}
+
     # handles hide action
     if prefer_status == '-2':
+        message['event'] = 'hide'
         if news_id in user_liked_news:
             user_liked_news.remove(news_id)
         user_hided_news.add(news_id)
     # handles dislike action
     elif prefer_status == '-1':
+        message['event'] = 'dislike'
         if news_id in user_liked_news:
             user_liked_news.remove(news_id)
         user_disliked_news.add(news_id)
@@ -132,9 +135,12 @@ def logNewsPreferenceForUser(user_id, news_id, prefer_status):
             user_disliked_news.remove(news_id)
     # handles like action
     elif prefer_status == '1':
+        message['event'] = 'like'
         if news_id in user_disliked_news:
             user_disliked_news.remove(news_id)
         user_liked_news.add(news_id)
+
+    cloudAMQP_client.sendMessage(message)
 
     # stores into redis
     redis_client.set(user_id+'liked', pickle.dumps(user_liked_news))
@@ -143,3 +149,4 @@ def logNewsPreferenceForUser(user_id, news_id, prefer_status):
     redis_client.expire(user_id+'disliked', USER_NEWS_TIME_OUT_IN_SECOND)
     redis_client.set(user_id+'hided', pickle.dumps(user_hided_news))
     redis_client.expire(user_id+'hided', USER_NEWS_TIME_OUT_IN_SECOND)
+
