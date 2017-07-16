@@ -30,7 +30,7 @@ class SignUpPage extends Component {
             return;
         }
 
-        fetch('http://localhost:3000/auth/signup', {
+        fetch('auth/signup', {
             method: 'POST',
             cache: false,
             headers: {

@@ -36,7 +36,7 @@ class NewsPanel extends React.Component {
             return;
         }
 
-        let url = `http://localhost:3000/news/userId/${Auth.getEmail()}/pageNum/${this.state.pageNum}`;
+        let url = `news/userId/${Auth.getEmail()}/pageNum/${this.state.pageNum}`;
 
         let request = new Request(url, {
             method: 'GET',
