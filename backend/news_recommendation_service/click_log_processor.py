@@ -37,7 +37,7 @@ def handle_message(msg):
     event = msg['event']
 
     db = mongodb_client.get_db()
-    model = db[PREFERENCE_MODEL_TABLE_NAME]
+    model = db[PREFERENCE_MODEL_TABLE_NAME].find_one({'userId': userId})
 
     if model is None:
         print 'Creating preference model for user %s' % userId
@@ -59,33 +59,37 @@ def handle_message(msg):
 
     click_class = news['class']
 
+    print click_class
+    print model['preference']
+    print list(model['preference'])
+
     if event == 'click':
         old_p = model['preference'][click_class]
         model['preference'][click_class] = float((1 - CLICK_ALPHA) * old_p + CLICK_ALPHA)
 
         for i, prob in model['preference'].iteritems():
             if not i == click_class:
-                model['preference'][i] = float((1 - CLICK_ALPHA) * model['preference'][i])
+                model['preference'][i] = (1 - CLICK_ALPHA) * float(model['preference'][i])
     elif event == 'like':
         old_p = model['preference'][click_class]
         model['preference'][click_class] = old_p * LIKE_PROMOTE
         for i, prob in model['preference'].iteritems():
             if not i == click_class:
-                model['preference'][i] = float((1 - CLICK_ALPHA) * model['preference'][i])
+                model['preference'][i] = (1 - CLICK_ALPHA) * float(model['preference'][i])
     elif event == 'dislike':
         old_p = model['preference'][click_class]
         model['preference'][click_class] = old_p * DISLIKE_PENALTY
-        delta = model['preference'][click_class] - old_p
+        delta = float(model['preference'][click_class]) - old_p
         for i, prob in model['preference'].iteritems():
             if not i == click_class:
-                model['preference'][i] = model['preference'][i] - delta / 5   
+                model['preference'][i] = float(model['preference'][i]) - delta / 5   
     elif event == 'hide':
         old_p = model['preference'][click_class]
         model['preference'][click_class] = HIDE_PENALTY if old_p > HIDE_PENALTY else 0
-        delta = model['preference'][click_class] - old_p
+        delta = float(model['preference'][click_class]) - old_p
         for i, prob in model['preference'].iteritems():
             if not i == click_class:
-                model['preference'][i] = model['preference'][i] - delta / 5    
+                model['preference'][i] = float(model['preference'][i]) - delta / 5    
 
     db[PREFERENCE_MODEL_TABLE_NAME].replace_one({'userId': userId}, model, upsert=True)
 

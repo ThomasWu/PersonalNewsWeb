@@ -21,7 +21,7 @@ SERVER_PORT = 5050
 
 
 def isClose(a, b, rel_tol=1e-09, abs_tol=0.0):
-    return abs(a-b) <= max(rel_tol * max(abs(a), abs(b), abs_tol))
+    return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
 
 class RequestHandler(pyjsonrpc.HttpRequestHandler):
     @pyjsonrpc.rpcmethod
@@ -32,6 +32,7 @@ class RequestHandler(pyjsonrpc.HttpRequestHandler):
         if model is None:
             return
 
+        print model
         sorted_tuples = sorted(model['preference'].items(), key=operator.itemgetter(1), reverse=True)
         sorted_list = [x[0] for x in sorted_tuples]
         sorted_value_list = [x[1] for x in sorted_tuples]
@@ -39,7 +40,7 @@ class RequestHandler(pyjsonrpc.HttpRequestHandler):
         if isClose(float(sorted_value_list[0]), float(sorted_value_list[-1])):
             return []
         
-        return sorted_list
+        return list(model['preference'].items())
 
 http_server = pyjsonrpc.ThreadingHttpServer(
    server_address =  (SERVER_HOST, SERVER_PORT),

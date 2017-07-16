@@ -20,7 +20,8 @@ filebeat.prospectors:
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
     #- /var/log/*.log
-    - /home/thomasw/CODETest/Web/Logstash/log/*.log
+    #- ${HOME}/WebDevelopment/capstone-project/PersonalNewsWeb/*/*/*.log
+    - ~/WebDevelopment/capstone-project/PersonalNewsWeb/frontend/web-server/webserver.log
     #- c:\programdata\elasticsearch\logs\*
 
   # Exclude lines. A list of regular expressions to match. It drops the lines that are
@@ -110,6 +111,7 @@ output.elasticsearch:
 # Sets log level. The default log level is info.
 # Available log levels are: critical, error, warning, info, debug
 #logging.level: debug
+logging.matrics.period: 1m
 
 # At debug level, you can selectively enable logging only for some components.
 # To enable all selectors use ["*"]. Examples of other selectors are "beat",

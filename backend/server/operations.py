@@ -4,6 +4,7 @@ import pickle
 import random
 import redis
 import sys
+from threading import Timer
 
 from bson.json_util import dumps
 from datetime import datetime
@@ -29,7 +30,7 @@ MONGODB_SETTINGS = configuration_service_client.getSystemSettings('mongodb')
 NEWS_TABLE_NAME = MONGODB_SETTINGS['tables']['news_table']
 CLICK_LOGS_TABLE_NAME = MONGODB_SETTINGS['tables']['click_logs_table']
 
-NEWS_LIMIT = 100
+NEWS_LIMIT = 200
 NEWS_LIST_BATCH_SIZE = 10
 USER_NEWS_TIME_OUT_IN_SECOND = 60*60*24
 
@@ -39,6 +40,13 @@ LOG_CLICKS_AMQP_TASK = 'log_clicks_task'
 redis_client = redis.StrictRedis(REDIS_HOST, REDIS_PORT, db=0)
 cloudAMQP_client = CloudAMQPClient(task=LOG_CLICKS_AMQP_TASK)
 logger = Logger(SYSTEM_NAME)
+
+def keepAlive():
+    cloudAMQP_client.sleep(0.1)
+    timer = Timer(10, keepAlive)
+    timer.start()
+
+keepAlive()
 
 def getNewsSummariesForUser(user_id, page_num):
     # retrieves user history
@@ -55,6 +63,19 @@ def getNewsSummariesForUser(user_id, page_num):
 
     sliced_news = []
 
+    # retrieves user preference
+    preference = news_recommendation_service_client.getPreferenceForUser(user_id)
+    topPreference, topProbability = '', 0
+    preference_thresholds =  {}
+    # gets top preference
+    for item in preference:
+        if item[1] > topPreference:
+            topPreference = item[0]
+            topProbability = float(item[1])
+    # generates thresholds
+    for item in preference:
+        preference_thresholds[item[0]] = float(item[1])/topProbability if topProbability != 0 else 1
+
     db = mongodb_client.get_db()
 
     if redis_client.get(user_id) is not None:
@@ -63,23 +84,20 @@ def getNewsSummariesForUser(user_id, page_num):
         sliced_news = list(db[NEWS_TABLE_NAME].find({'digest': {'$in': sliced_news_digests}}))
     else:
         total_news = list(db[NEWS_TABLE_NAME].find({'digest': {'$nin': list(user_disliked_news | user_hided_news)}}).sort([('publishedAt', -1)]).limit(NEWS_LIMIT))
-        total_news_digests = [news['digest'] for news in total_news]
+        total_news_digests = [news['digest'] for news in total_news if 'class' in news and news['class'] in preference_thresholds and random.random() < preference_thresholds[news['class']]]
 
         redis_client.set(user_id, pickle.dumps(total_news_digests))
         redis_client.expire(user_id, USER_NEWS_TIME_OUT_IN_SECOND)
 
         sliced_news = total_news[begin_index: end_index]
 
-    preference = news_recommendation_service_client.getPreferenceForUser(user_id)
-    preference = None
-    topPreference = None
 
     if preference is not None and len(preference) > 0:
         topPreference = preference[0]
 
     for news in sliced_news:
         del news['text']
-        if news['class'] == topPreference:
+        if 'class' in news and news['class'] == topPreference:
             news['reason'] = 'Recommend'
         if news['digest'] in user_liked_news:
             news['liked'] = 1 
@@ -113,7 +131,7 @@ def logNewsPreferenceForUser(user_id, news_id, prefer_status):
     user_hided_news_buff = redis_client.get(user_id+'hided')
     user_hided_news = pickle.loads(user_hided_news_buff) if user_hided_news_buff is not None else set()
     
-    message = {'userId': user_id, 'newsId': news_id, 'timestamp': message['timestamp']}
+    message = {'userId': user_id, 'newsId': news_id, 'timestamp': str(datetime.utcnow())}
 
     # handles hide action
     if prefer_status == '-2':

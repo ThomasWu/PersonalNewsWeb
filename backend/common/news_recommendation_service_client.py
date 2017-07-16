@@ -1,11 +1,11 @@
 import pyjsonrpc
+import configuration_service_client as conf_client
 
-class NewsRecommendationServiceClient(object):
-    def __init__(self, url):
-        self.url = url
-        self.client = pyjsonrpc.HttpClient(url=self.url)
+URL = 'http://localhost:5050'
 
-    def getPreferenceForUser(self, user_id):
-        preference = self.client.call('getPreferenceForUser', user_id)
-        # TODO: logs fetching operation to log system
-        return preference
+client = pyjsonrpc.HttpClient(url=URL)
+
+def getPreferenceForUser(user_id):
+    preference = client.call('getPreferenceForUser', user_id)
+    # TODO: logs fetching operation to log system
+    return preference
